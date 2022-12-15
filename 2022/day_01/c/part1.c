@@ -37,7 +37,7 @@ void process_file(FILE* file)
         ret = sscanf(buf, "%d", &val);
         if (ret == 0 || ret == EOF)
         {
-            printf("Elf #%d total: %d\n", ++cnt, temp);
+            //printf("Elf #%d total: %d\n", ++cnt, temp);
             if (water_mark < temp)
             {
                 water_mark = temp;
