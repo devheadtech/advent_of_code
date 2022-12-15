@@ -43,7 +43,7 @@ void process_file(FILE* file)
         ret = sscanf(buf, "%d", &val);
         if (ret == 0 || ret == EOF)
         {
-            printf("Elf #%d total: %d\n", ++cnt, temp);
+            //printf("Elf #%d total: %d\n", ++cnt, temp);
             top[0] = temp;
             qsort(top, 4, sizeof(int), compare);
             temp = 0;
@@ -56,7 +56,7 @@ void process_file(FILE* file)
 
     for(int i=1; i<4; i++)
     {
-        printf("Most Calories: %d\n", top[i]);
+        //printf("Most Calories: %d\n", top[i]);
         sum += top[i];
     }
 
