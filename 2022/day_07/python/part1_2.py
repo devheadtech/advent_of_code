@@ -7,6 +7,9 @@
 
 import sys
 
+DISK_SZ = 70000000
+UPDATE_SZ = 30000000
+
 class Node:
     def __init__(self, name, size) -> None:
         self.name = name
@@ -35,23 +38,25 @@ class Dir(Node):
         self.children.append(n)
     #
 
-    def list(self, recurse=False) -> None:
+    def list(self, recurse=False, dir_only=False) -> None:
         print("---")
-        print(self, ":")
+        print(self.name, ":")
         for c in self.children:
-            print(c)
+            if(type(c).__name__ == "File" and dir_only != True) or (type(c).__name__ == "Dir"):
+                print(c)
         #
 
         if (recurse):
             for c in self.children:
                 if(getattr(c, "list", False)):
-                    c.list(recurse)
+                    c.list(recurse, dir_only)
                 #
             #
         #
     #
 
     def calc_size(self) -> int:
+        self.size = 0
         for c in self.children:
             if(getattr(c, "calc_size", False)):
                 sz = c.calc_size()
@@ -61,6 +66,24 @@ class Dir(Node):
             self.size += sz
         #
         return self.size
+    #
+
+    def find(self,min,max) -> int:
+        if (self.size < min):
+            return max
+
+        if(self.size < max):
+            max = self.size
+
+        for c in self.children:
+            if(getattr(c, "find", False)):
+                ret = c.find(min,max)
+                if(ret < max):
+                    max = ret
+                #
+            #
+        #      
+        return max
     #
 #
 
@@ -78,8 +101,8 @@ class FileSystem:
         self.pos.add(Dir(name, self.pos))
     #
 
-    def ls(self, recurse = False) -> None:
-        self.pos.list(recurse)
+    def ls(self, recurse = False, dir_only=False) -> None:
+        self.pos.list(recurse, dir_only)
     #
 
     def cd(self, dir) -> None:
@@ -101,32 +124,40 @@ class FileSystem:
         self.pos.add(File(file,size))
     #
 
-    def du(self, dir, min=100000) -> None:
+    def du(self, dir, max=100000) -> None:
         cnt = 0
-        if(dir.size <= min):
+        if(dir.size <= max):
             cnt += dir.size
-            print(dir)
+            #print(dir)
         #
 
         for c in dir.children:
             if(type(c).__name__ == "Dir"):
-                cnt += self.du(c)
+                cnt += self.du(c, max)
             #
         #
         return cnt
     #
+
+    def delete(self, min) -> int:
+        return self.root.find(min,self.root.size)
+    #
 # 
 
-def make_fs(line) -> None:
-    if (line[0] == "$"):
-        if (line[1] == "cd"):
-            fs.cd(line[2])
-        # ignore ls
-    elif (line[0] == "dir"):
-        fs.mkdir(line[1])
-    else:
-        fs.touch(line[1], int(line[0]))
+def make_fs(name) -> None:
+    file = open(name, "r")
+    while (line := file.readline().strip().split()):
+        if (line[0] == "$"):
+            if (line[1] == "cd"):
+                fs.cd(line[2])
+            # ignore ls
+        elif (line[0] == "dir"):
+            fs.mkdir(line[1])
+        else:
+            fs.touch(line[1], int(line[0]))
+        #
     #
+    file.close()
 #
 
 def main():
@@ -135,18 +166,23 @@ def main():
         return
     #
 
-    file = open(sys.argv[1], "r")
-    while (line := file.readline().strip().split()):
-        make_fs(line)
-    #
+    make_fs(sys.argv[1])
 
     fs.root.calc_size()
-    print("Total: ", fs.du(fs.root))
+
+    free = DISK_SZ - fs.root.size
+    need = UPDATE_SZ - free
+
+    print("Free Space: ", free)
+    print("Root Size: ", fs.root.size)
+    print("Needed Space: ", need)
     
-    file.close()
+    print("Found to delete (part2): ", int(fs.delete(need)))
+    print("Total Under 100000 (part1): ", fs.du(fs.root))
 #
 
 fs = FileSystem()
+delete_dir = Dir("", None)
 
 if __name__ == "__main__":
     main()
