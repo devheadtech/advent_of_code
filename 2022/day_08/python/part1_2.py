@@ -63,38 +63,57 @@ class Forest():
     #
 
     def find_visible(self) -> int:
-        c = self.cols
-        r = self.rows
+        c = self.cols-1
+        r = self.rows-1
 
-        # Top/Left
-        for i in range(1,c-2):
-            for j in range(1,r-2):
+        # Left to Right
+        for i in range(1,r):
+            max = self.trees[i][0].height
+            for j in range(1,c):
                 cur = self.trees[i][j]
-                top = self.trees[i-1][j]
-                left = self.trees[i][j-1]
-
-                if cur.height > top.height and top.visible:
+                if cur.height > max:
                     self.trees[i][j].visible = True
-                elif cur.height > left.height and left.visible:
-                    self.trees[i][j].visible = True
+                    max = cur.height
                 #
             #
         #
 
-        # Bottom/Right
-        for i in range(c-2, 0, -1):
-            for j in range(r-2, 0, -1):
+        # Right to Left
+        for i in range(1, r):
+            max = self.trees[i][c].height
+            for j in range(r-1,0,-1):
                 cur = self.trees[i][j]
-                bot = self.trees[i+1][j]
-                right = self.trees[i][j+1]
-
-                if cur.height > bot.height and bot.visible:
+                if cur.height > max:
                     self.trees[i][j].visible = True
-                elif cur.height > right.height and right.visible:
-                    self.trees[i][j].visible = True
+                    max = cur.height
                 #
             #
         #
+
+        # Top to Bottom
+        for j in range(1,c):
+            max = self.trees[0][j].height
+            for i in range(1,r):
+                cur = self.trees[i][j]
+                if cur.height > max:
+                    self.trees[i][j].visible = True
+                    max = cur.height
+                #
+            #
+        #
+
+        # Bottom to Top
+        for j in range(1, c):
+            max = self.trees[r][j].height
+            for i in range(r-1, 0, -1):
+                cur = self.trees[i][j]
+                if cur.height > max:
+                    self.trees[i][j].visible = True
+                    max = cur.height
+                #
+            #
+        #
+
         return self.count_visible()
     #
 
